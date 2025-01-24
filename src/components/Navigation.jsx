@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 export default function Navigation() {
   return (
@@ -15,30 +16,23 @@ export default function Navigation() {
         <div className="mobile-menu-items">
           <ul>
             <li className="menu-item-has-children active">
-              <a href="index.html">Home</a>
-              <ul>
-                <li><a href="index.html">Fashion Home</a></li>
-                <li><a href="index-2.html">Grocery Home</a></li>
-                <li><a href="index-3.html">Furniture</a></li>
-              </ul>
+              <Link to="/">Home</Link>
             </li>
-            <li className="menu-item-has-children">
-              <a href="shop.html">Shop</a>
+            <li>
+              <Link href="/Products">Products</Link>
               <ul>
-                <li><a href="shop.html">Shop</a></li>
-                <li><a href="shop-grid.html">Shop Grid</a></li>
-                <li><a href="shop-details.html">Shop Details</a></li>
-                <li><a href="cart.html">Cart</a></li>
-                <li><a href="wishlist.html">Wishlist</a></li>
-                <li><a href="checkout.html">Checkout</a></li>
+              <li><Link to="/Products">Products Shop</Link></li>
+              <li><Link to="/AddProduct">Add New Product</Link></li>
+
               </ul>
             </li>
             <li>
-              <a href="shop-grid.html">Women</a>
+              <Link to="/Order">Orders</Link>
             </li>
+
             <li>
-              <a href="shop-grid.html">men</a>
-            </li>
+  <Link to="/OrdersAdmin">Admin View</Link>
+</li>
             <li className="menu-item-has-children">
               <a href="#">Pages</a>
               <ul>
@@ -49,15 +43,7 @@ export default function Navigation() {
                 <li><a href="error.html">404 Error</a></li>
               </ul>
             </li>
-            <li className="menu-item-has-children">
-              <a href="blog-grid.html">Blog</a>
-              <ul>
-                <li><a href="blog-grid.html">Blog Grid</a></li>
-                <li><a href="blog-grid-2.html">Blog list</a></li>
-                <li><a href="blog-details.html">Blog Details</a></li>
-              </ul>
-            </li>
-            <li><a href="contact.html">Contact</a></li>
+            
           </ul>
         </div>
       </div>

@@ -1,56 +1,76 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from 'axios';
+import Navigation from "../components/Navigation";
+import { Link } from "react-router-dom";
+
 
 const AddProduct = () => {
-    const [formData, setFormData] = useState({
-      name: "",
-      description: "",
-      price: "",
-      stock: "",
-      image: null,  // Ajout de l'attribut image
-    });
-  
-    const [message, setMessage] = useState("");
-  
-    const handleChange = (e) => {
-      const { name, value } = e.target;
-      setFormData({ ...formData, [name]: value });
-    };
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    price: "",
+    stock: "",
+    image: null,  // Ajout de l'attribut image
+  });
 
-    // Gérer le changement pour l'image
-    const handleImageChange = (e) => {
-      const file = e.target.files[0];
-      setFormData({ ...formData, image: file });
-    };
+  // Définir un état pour le panier
+  const [cart, setCart] = useState([]);
 
-    const handleSubmit = async (e) => {
-      e.preventDefault();
+  // Charger le panier depuis le localStorage lorsque le composant est monté
+  useEffect(() => {
+    const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
+    setCart(storedCart);
+  }, []); // Le tableau vide assure que l'effet se lance uniquement au montage
 
-      // Créer un FormData pour inclure l'image dans la requête
-      const formDataToSend = new FormData();
-      formDataToSend.append("product", JSON.stringify({
-        name: formData.name,
-        description: formData.description,
-        price: formData.price,
-        stock: formData.stock
-      }));
-      formDataToSend.append("file", formData.image); // Ajouter l'image
+  const getCartSummary = () => {
+    const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
+    const totalPrice = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    return { totalItems, totalPrice };
+  };
 
-      try {
-        const response = await axios.post("http://localhost:8089/products/addproduct", formDataToSend, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
-        setMessage("Product added successfully!");
-        setFormData({ name: "", description: "", price: "", stock: "", image: null }); // Réinitialiser
-      } catch (error) {
-        console.error("Error adding product:", error);
-        setMessage("Failed to add product. Please try again.");
-      }
-    };
-  
-    return (
+  const [message, setMessage] = useState("");
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  // Gérer le changement pour l'image
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    setFormData({ ...formData, image: file });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Créer un FormData pour inclure l'image dans la requête
+    const formDataToSend = new FormData();
+    formDataToSend.append("product", JSON.stringify({
+      name: formData.name,
+      description: formData.description,
+      price: formData.price,
+      stock: formData.stock
+    }));
+    formDataToSend.append("file", formData.image); // Ajouter l'image
+
+    try {
+      const response = await axios.post("http://localhost:8089/products/addproduct", formDataToSend, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      setMessage("Product added successfully!");
+      setFormData({ name: "", description: "", price: "", stock: "", image: null }); // Réinitialiser
+    } catch (error) {
+      console.error("Error adding product:", error);
+      setMessage("Failed to add product. Please try again.");
+    }
+  };
+
+  const { totalItems, totalPrice } = getCartSummary();  // Appeler getCartSummary ici
+
+  return (
     <>
     
     <div>
@@ -60,11 +80,12 @@ const AddProduct = () => {
             <div className="container">
               <div className="header-middle-inner">
                 <div className="header-middle-left">
-                  <div className="header-logo d-lg-block">
-                    <a href="index.html">
-                      <img src="assets/img/logo/logo-1.png" alt="Logo" />
-                    </a>
-                  </div>
+                <div className="header-logo mobile-logo" style={{ display: 'flex', alignItems: 'center' }}>
+  <Link to="/" style={{ display: 'flex', alignItems: 'center' }}>
+    <img src="assets/img/logo1.png" alt="Logo" style={{ maxHeight: '50px', marginRight: '10px' }} />
+    <span style={{ fontWeight: 'bold', color: '#000000', fontSize: '24px' }}>MicroMall</span>
+  </Link>
+</div>
                   <div className="category-form-wrap">
                     <div className="nice-select select-control country" tabIndex={0}>
                       <span className="current">ALL Categories</span>
@@ -88,93 +109,22 @@ const AddProduct = () => {
                         <i className="fa-sharp fa-regular fa-heart" />
                       </a>
                     </li>
-                    <li>
-                      <a href="cart.html" className="icon">
-                        <i className="fa-light fa-bag-shopping" />
-                        <span>2</span>
-                      </a>
-                      <div className="content">
-                        <span>Your cart,</span>
-                        <h5 className="number">$1280.00</h5>
-                      </div>
-                    </li>
+<li>
+  <Link to="/Panier" className="icon">
+    <i className="fa-light fa-bag-shopping" />
+    {totalItems > 0 && <span>{totalItems}</span>}
+  </Link>
+  <div className="content">
+    <span>Your cart,</span>
+    <h5 className="number">${totalPrice.toFixed(2)}</h5>
+  </div>
+</li>
                   </ul>
                 </div>
               </div>
             </div>
           </div>
-          <div className="primary-header">
-            <div className="container">
-              <div className="primary-header-inner">
-                <div className="header-logo mobile-logo">
-                  <a href="index.html">
-                    <img src="assets/img/logo/logo-1.png" alt="Logo" />
-                  </a>
-                </div>
-                <div className="header-menu-wrap">
-                  <div className="mobile-menu-items">
-                    <ul>
-                      <li className="menu-item-has-children active">
-                        <a href="index.html">Home</a>
-                        <ul>
-                          <li><a href="index.html">Fashion Home</a></li>
-                          <li><a href="index-2.html">Grocery Home</a></li>
-                          <li><a href="index-3.html">Furniture</a></li>
-                        </ul>
-                      </li>
-                      <li className="menu-item-has-children">
-                        <a href="shop.html">Shop</a>
-                        <ul>
-                          <li><a href="shop.html">Shop</a></li>
-                          <li><a href="shop-grid.html">Shop Grid</a></li>
-                          <li><a href="shop-details.html">Shop Details</a></li>
-                          <li><a href="cart.html">Cart</a></li>
-                          <li><a href="wishlist.html">Wishlist</a></li>
-                          <li><a href="checkout.html">Checkout</a></li>
-                        </ul>
-                      </li>
-                      <li>
-                        <a href="shop-grid.html">Women</a>
-                      </li>
-                      <li>
-                        <a href="shop-grid.html">men</a>
-                      </li>
-                      <li className="menu-item-has-children">
-                        <a href="#">Pages</a>
-                        <ul>
-                          <li><a href="about.html">About</a></li>
-                          <li><a href="login.html">Login</a></li>
-                          <li><a href="register.html">Register</a></li>
-                          <li><a href="faq.html">Faq</a></li>
-                          <li><a href="error.html">404 Error</a></li>
-                        </ul>
-                      </li>
-                      <li className="menu-item-has-children">
-                        <a href="blog-grid.html">Blog</a>
-                        <ul>
-                          <li><a href="blog-grid.html">Blog Grid</a></li>
-                          <li><a href="blog-grid-2.html">Blog list</a></li>
-                          <li><a href="blog-details.html">Blog Details</a></li>
-                        </ul>
-                      </li>
-                      <li><a href="contact.html">Contact</a></li>
-                    </ul>
-                  </div>
-                </div>
-                {/* /.header-menu-wrap */}
-                <div className="header-right-wrap">
-                  <div className="header-right">
-                    <span>Get 30% Discount Now <span>Sale</span></span>
-                    <div className="header-right-item">
-                      <a href="javascript:void(0)" className="mobile-side-menu-toggle"><i className="fa-sharp fa-solid fa-bars" /></a>
-                    </div>
-                  </div>
-                  {/* /.header-right */}
-                </div>
-              </div>
-              {/* /.primary-header-inner */}
-            </div>
-          </div>
+          <Navigation />
         </header>
         {/* /.Main Header */}
         <div id="popup-search-box">
@@ -186,14 +136,6 @@ const AddProduct = () => {
           </div>
         </div>
         {/* /#popup-search-box */}
-        <div id="preloader">
-          <div className="preloader-close">X</div>
-          <div className="sk-three-bounce">
-            <div className="sk-child sk-bounce1" />
-            <div className="sk-child sk-bounce2" />
-            <div className="sk-child sk-bounce3" />
-          </div>
-        </div>
         {/* ./ preloader */}
         <div className="mobile-side-menu">
           <div className="side-menu-content">

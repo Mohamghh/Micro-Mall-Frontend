@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 import Navigation from "../components/Navigation";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
+  const [cart, setCart] = useState([]);
 
   useEffect(() => {
     // Récupérer les produits depuis le backend
@@ -15,10 +17,42 @@ const Products = () => {
         console.error("Error fetching products:", error);
       }
     };
+
     fetchProducts();
+
+    // Récupérer le panier depuis le localStorage
+    const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
+    setCart(storedCart);
   }, []);
 
-  return ( 
+  const addToCart = (product) => {
+    // Récupérer le panier du localStorage ou initialiser un tableau vide
+    let updatedCart = [...cart];
+    const existingProductIndex = updatedCart.findIndex((item) => item.id === product.id);
+    
+    if (existingProductIndex >= 0) {
+      // Si le produit est déjà dans le panier, augmenter la quantité
+      updatedCart[existingProductIndex].quantity += 1;
+    } else {
+      // Ajouter le produit au panier
+      updatedCart.push({ ...product, quantity: 1 });
+    }
+
+    // Sauvegarder le panier dans le localStorage et mettre à jour l'état
+    localStorage.setItem("cart", JSON.stringify(updatedCart));
+    setCart(updatedCart);
+  };
+
+  const getCartSummary = () => {
+    const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
+    const totalPrice = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    return { totalItems, totalPrice };
+  };
+
+  const { totalItems, totalPrice } = getCartSummary();
+
+  
+  return (
 
     <>
 
@@ -33,11 +67,12 @@ const Products = () => {
                 <div className="container">
                   <div className="header-middle-inner">
                     <div className="header-middle-left">
-                      <div className="header-logo d-lg-block">
-                        <a href="index.html">
-                          <img src="assets/img/logo/logo-1.png" alt="Logo" />
-                        </a>
-                      </div>
+                    <div className="header-logo mobile-logo" style={{ display: 'flex', alignItems: 'center' }}>
+  <Link to="/" style={{ display: 'flex', alignItems: 'center' }}>
+    <img src="assets/img/logo1.png" alt="Logo" style={{ maxHeight: '50px', marginRight: '10px' }} />
+    <span style={{ fontWeight: 'bold', color: '#000000', fontSize: '24px' }}>MicroMall</span>
+  </Link>
+</div>
                       <div className="category-form-wrap">
                         <div className="nice-select select-control country" tabIndex={0}>
                           <span className="current">ALL Categories</span>
@@ -61,16 +96,16 @@ const Products = () => {
                             <i className="fa-sharp fa-regular fa-heart" />
                           </a>
                         </li>
-                        <li>
-                          <a href="cart.html" className="icon">
-                            <i className="fa-light fa-bag-shopping" />
-                            <span>2</span>
-                          </a>
-                          <div className="content">
-                            <span>Your cart,</span>
-                            <h5 className="number">$1280.00</h5>
-                          </div>
-                        </li>
+          <li>
+            <Link to="/Panier" className="icon">
+              <i className="fa-light fa-bag-shopping" />
+              {totalItems > 0 && <span>{totalItems}</span>}
+            </Link>
+            <div className="content">
+              <span>Your cart,</span>
+              <h5 className="number">${totalPrice.toFixed(2)}</h5>
+            </div>
+          </li>
                       </ul>
                     </div>
                   </div>
@@ -103,14 +138,6 @@ const Products = () => {
               </div>
             </div>
             {/* /.mobile-side-menu */}
-            <div id="preloader">
-              <div className="preloader-close">X</div>
-              <div className="sk-three-bounce">
-                <div className="sk-child sk-bounce1" />
-                <div className="sk-child sk-bounce2" />
-                <div className="sk-child sk-bounce3" />
-              </div>
-            </div>
             {/* ./ preloader */}
             <section className="page-header">
               <div className="shape"><img src="assets/img/shapes/page-header-shape.png" alt="shape" /></div>
@@ -132,54 +159,50 @@ const Products = () => {
               </div>
             </section>
             {/* ./ page-header */}
-    <section className="shop-section pt-100 pb-100">
-    <style>
-         {`
+            <section className="shop-section pt-100 pb-100">
+            <style>
+       {`
+       
+        /* Partie blanche sous l'image */
+        .shop-item .shop-content {
+          min-height: 200px; /* Assurez-vous que la zone blanche est toujours d'une hauteur fixe */
+        }
+        `}
+    </style>
 
-         
-
-          /* Partie blanche sous l'image */
-          .shop-item .shop-content {
-            min-height: 200px; /* Assurez-vous que la zone blanche est toujours d'une hauteur fixe */
-          }
-          `}
-      </style>
       <div className="container">
         <div className="row">
           {products.map((product) => (
             <div key={product.id} className="col-xl-3 col-lg-4 col-md-6">
               <div className="shop-item">
                 <div className="shop-thumb">
-                  <div className="overlay" />
-                  {/* Affichage de l'image du produit */}
                   <img
                     src={`data:${product.imageType};base64,${product.image}`}
                     alt={product.name}
                   />
-                  <span className="sale">New</span>
                   <ul className="shop-list">
-                    <li><a href="#"><i className="fa-regular fa-cart-shopping" /></a></li>
-                    <li><a href="#"><i className="fa-light fa-heart" /></a></li>
-                    <li><a href="#"><i className="fa-light fa-eye" /></a></li>
+                    <li>
+                      <a href="#" onClick={() => addToCart(product)}>
+                        <i className="fa-regular fa-cart-shopping" />
+                      </a>
+                    </li>
                   </ul>
                 </div>
                 <div className="shop-content">
                   <span className="category">{product.name}</span>
-                  <h3 className="title"><a href="shop-details.html">{product.description}</a></h3>
+                  <h3 className="title">{product.description}</h3>
                   <div className="review-wrap">
-                    <ul className="review">
-                      {/* Affichage des étoiles (ici pour simplification 5 étoiles par défaut) */}
-                      <li><i className="fa-solid fa-star" /></li>
-                      <li><i className="fa-solid fa-star" /></li>
-                      <li><i className="fa-solid fa-star" /></li>
-                      <li><i className="fa-solid fa-star" /></li>
-                      <li><i className="fa-solid fa-star" /></li>
-                    </ul>
-                    <span>(15 Reviews)</span>
-                  </div>
-                  <span className="price">
-                    <span className="offer">${product.price}</span>
-                  </span>
+  <ul className="review">
+    {/* Affichage des étoiles (ici pour simplification 5 étoiles par défaut) */}
+    <li><i className="fa-solid fa-star" /></li>
+    <li><i className="fa-solid fa-star" /></li>
+    <li><i className="fa-solid fa-star" /></li>
+    <li><i className="fa-solid fa-star" /></li>
+    <li><i className="fa-solid fa-star" /></li>
+  </ul>
+  <span>(15 Reviews)</span>
+</div>
+                  <span className="price">${product.price}</span>
                 </div>
               </div>
             </div>
@@ -187,6 +210,7 @@ const Products = () => {
         </div>
       </div>
     </section>
+
             {/* ./ shop-grid */}
             <footer className="footer-section bg-grey pt-60">
               <div className="container">

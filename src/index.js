@@ -6,6 +6,9 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Homepage from './pages/Homepage';
 import AddProduct from './pages/AddProduct';
 import Products from './pages/Products';
+import Panier from './pages/Panier';
+import Order from './pages/Order';
+import OrdersAdmin from './pages/OrdersAdmin';
 
 
 const router = createBrowserRouter([ {
@@ -32,6 +35,35 @@ const router = createBrowserRouter([ {
       element: (
         
           <Products />
+       
+      ),
+    },
+
+    {
+      path: "/Panier",
+      element: (
+        
+          <Panier />
+       
+      ),
+    },
+
+    {
+      path: "/Order",
+      element: (
+        
+          <Order />
+       
+      ),
+    },
+
+
+
+    {
+      path: "/OrdersAdmin",
+      element: (
+        
+          <OrdersAdmin />
        
       ),
     },
